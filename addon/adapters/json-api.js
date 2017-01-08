@@ -32,16 +32,27 @@ import { instrument, deprecate } from 'ember-data/-private/debug';
     <th>
       URL
     </th>
+    <th>
+      Request
+    </th>
+    <th>
+      Response
+    </th>
   </tr>
   <tr>
     <th>
-      `store.findRecord('post', 123)`
+      `store.findRecord('player', 123)`
     </th>
     <td>
       GET
     </td>
     <td>
-      /posts/123
+      /players/123
+    </td>
+    <td>
+     -
+    </td>
+    <td>
     </td>
   </tr>
   <tr>
@@ -52,40 +63,40 @@ import { instrument, deprecate } from 'ember-data/-private/debug';
       GET
     </td>
     <td>
-      /posts
+      /players
     </td>
   </tr>
   <tr>
     <th>
-      Update `postRecord.save()`
+      Update `playerRecord.save()`
     </th>
     <td>
       PATCH
     </td>
     <td>
-      /posts/123
+      /players/123
     </td>
   </tr>
   <tr>
     <th>
-      Create `store.createRecord('post').save()`
+      Create `store.createRecord('player').save()`
     </th>
     <td>
       POST
     </td>
     <td>
-      /posts
+      /players
     </td>
   </tr>
   <tr>
     <th>
-      Delete `postRecord.destroyRecord()`
+      Delete `playerRecord.destroyRecord()`
     </th>
     <td>
       DELETE
     </td>
     <td>
-      /posts/123
+      /players/123
     </td>
   </tr>
 </table>

@@ -20,11 +20,16 @@ const assign = Ember.assign || Ember.merge;
   Ember Data 2.0 Serializer:
 
   In Ember Data a Serializer is used to serialize and deserialize
-  records when they are transferred in and out of an external source.
+  records in the store when they are transferred in and out of an external source.
   This process involves normalizing property names, transforming
   attribute values and serializing relationships.
 
-  By default, Ember Data uses and recommends the `JSONAPISerializer`.
+  Serializers are meant to convert non-JSONAPI payloads into the format that Ember Data expects.
+  Although convenient and sometimes necessary, they add additional processing to each request.
+  For this reason, they should be considered temporary, or used sparingly, until your backend
+  is able to return JSONAPI payloads.
+
+  The JSONAPI format is used internally, so Ember Data uses and recommends the `JSONAPISerializer` by default.
 
   `JSONSerializer` is useful for simpler or legacy backends that may
   not support the http://jsonapi.org/ spec.

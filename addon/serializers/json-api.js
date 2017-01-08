@@ -22,74 +22,144 @@ const dasherize = Ember.String.dasherize;
   `JSONAPISerializer` supports the http://jsonapi.org/ spec and is the
   serializer recommended by Ember Data.
 
-  This serializer normalizes a JSON API payload that looks like:
+  Given the following models:
 
-  ```app/models/player.js
-  import DS from 'ember-data';
+  ```js
+    // models/author.js
+    import DS from "ember-data";
 
-  export default DS.Model.extend({
-    name: DS.attr('string'),
-    skill: DS.attr('string'),
-    gamesPlayed: DS.attr('number'),
-    club: DS.belongsTo('club')
-  });
+    export default Model.extend({
+      name: DS.attr('string'),
+      books: DS.hasMany('book', { async: false }),
+      booksAttr: DS.attr()
+    });
+
+    // models/book.js
+    import DS from "ember-data";
+
+    export default Model.extend({
+      title: DS.attr('string'),
+      author: DS.belongsTo('author', { async: false })
+    });
   ```
 
-  ```app/models/club.js
-  import DS from 'ember-data';
-
-  export default DS.Model.extend({
-    name: DS.attr('string'),
-    location: DS.attr('string'),
-    players: DS.hasMany('player')
-  });
-  ```
+  This serializer normalizes a JSON API payload:
 
   ```js
     {
       "data": [
         {
-          "attributes": {
-            "name": "Benfica",
-            "location": "Portugal"
+          id: 1,
+          type: 'author',
+           attributes: {
+            name: "Mark Twain",
+            "books-signed": 456
           },
-          "id": "1",
-          "relationships": {
-            "players": {
-              "data": [
-                {
-                  "id": "3",
-                  "type": "players"
-                }
-              ]
+          relationships: {
+            books: {
+              data: [{
+                id: 1,
+                type: 'book'
+              }]
             }
+          }
+        },
+        {
+          id: 2,
+          type: 'author',
+           attributes: {
+            name: "Ernest Hemingway",
+            "books-signed": 3
           },
-          "type": "clubs"
+          relationships: {
+            books: {
+              data: [{
+                id: 2,
+                type: 'book'
+              },{
+                id: 3,
+                type: 'book'
+              }]
+            }
+          }
+        },
+        {
+          id: 3,
+          type: 'author',
+           attributes: {
+            name: "Stephen King",
+            "books-signed": 15021
+          },
+          relationships: {
+            books: {
+              data: [{
+                id: 4,
+                type: 'book'
+              },{
+                id: 5,
+                type: 'book'
+              },{
+                id: 6,
+                type: 'book'
+              }]
+            }
+          }
         }
       ],
-      "included": [
+      included: [
         {
-          "attributes": {
-            "name": "Eusebio Silva Ferreira",
-            "skill": "Rocket shot",
-            "games-played": 431
-          },
-          "id": "3",
-          "relationships": {
-            "club": {
-              "data": {
-                "id": "1",
-                "type": "clubs"
-              }
-            }
-          },
-          "type": "players"
+          id: 1,
+          type: 'book',
+          attributes: {
+            title: 'Tom Sawyer'
+          }
+        },
+        {
+          id: 2,
+          type: 'book',
+          attributes: {
+            title: 'A Farewell To Arms'
+          }
+        },
+        {
+          id: 3,
+          type: 'book',
+          attributes: {
+            title: 'The Old Man And the Sea'
+          }
+        },
+        {
+          id: 4,
+          type: 'book',
+          attributes: {
+            title: 'The Shining'
+          }
+        },
+        {
+          id: 5,
+          type: 'book',
+          attributes: {
+            title: 'The Stand'
+          }
+        },
+        {
+          id: 6,
+          type: 'book',
+          attributes: {
+            title: 'The Long Walk'
+          }
         }
       ]
     }
   ```
 
-  to the format that the Ember Data store expects.
+  This [EmberTwiddle (JSONAPIAdapter)][https://ember-twiddle.com/c0beed7d3c0bed65ac8ed018dcc57894/copy] shows a similar example.
+
+  Note: The JSONAPI serializer makes some assumptions about the JSONAPI doc returned from the server:
+  - hyphened properties in the payload are mapped to
+ camelcased properties on models (ex: 'books-signed' => booksSigned).
+  - all type names should be pluralized
+  - attribute and relationship names should be dashersized
 
   ### Customizing meta
 
@@ -121,6 +191,9 @@ const dasherize = Ember.String.dasherize;
     }
   });
   ```
+
+  ### Expected API Responses
+  See [adapters/json-api](DS.JSONAPIAdapter.html) documentation for the expected request and response payloads when using JSONAPI.
 
   @since 1.13.0
   @class JSONAPISerializer
