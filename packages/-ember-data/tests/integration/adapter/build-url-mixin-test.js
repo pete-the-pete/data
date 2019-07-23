@@ -5,6 +5,7 @@ import { resolve } from 'rsvp';
 import deepCopy from 'dummy/tests/helpers/deep-copy';
 import { pluralize } from 'ember-inflector';
 import RESTAdapter from '@ember-data/adapter/rest';
+import RESTSerializer from '@ember-data/serializer/rest';
 import Model, { attr, belongsTo, hasMany } from '@ember-data/model';
 
 module('integration/adapter/build-url-mixin - BuildURLMixin with RESTAdapter', function(hooks) {
@@ -31,6 +32,7 @@ module('integration/adapter/build-url-mixin - BuildURLMixin with RESTAdapter', f
     const SuperUser = Model.extend({});
 
     owner.register('adapter:application', RESTAdapter);
+    owner.register('serializer:application', RESTSerializer);
     owner.register('model:comment', CommentModel);
     owner.register('model:post', PostModel);
     owner.register('model:super-user', SuperUser);
