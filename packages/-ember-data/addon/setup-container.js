@@ -29,12 +29,12 @@ function initializeStore(registry) {
   let registerOptionsForType = registry.registerOptionsForType || registry.optionsForType;
   registerOptionsForType.call(registry, 'serializer', { singleton: false });
   registerOptionsForType.call(registry, 'adapter', { singleton: false });
-  registry.register('serializer:-default', JSONSerializer);
-  registry.register('serializer:-rest', RESTSerializer);
+  // registry.register('serializer:-default', JSONSerializer);
+  // registry.register('serializer:-rest', RESTSerializer);
   registry.register('adapter:-rest', RESTAdapter);
 
   registry.register('adapter:-json-api', JSONAPIAdapter);
-  registry.register('serializer:-json-api', JSONAPISerializer);
+  // registry.register('serializer:-json-api', JSONAPISerializer);
 
   if (!has(registry, 'service:store')) {
     registry.register('service:store', Store);
@@ -84,7 +84,7 @@ function initializeTransforms(registry) {
 
 export default function setupContainer(application) {
   initializeDataAdapter(application);
-  initializeTransforms(application);
+  //initializeTransforms(application);
   initializeStoreInjections(application);
   initializeStore(application);
 }
