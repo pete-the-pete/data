@@ -1,14 +1,59 @@
 import { defer, reject, resolve } from 'rsvp';
 import { run } from '@ember/runloop';
 import setupStore from 'dummy/tests/helpers/store';
-
+import { deprecatedTest } from 'dummy/tests/helpers/deprecated-test';
+import { RETURN_PROMISE_FROM_SAVE } from '@ember-data/canary-features';
 import { module, test } from 'qunit';
 
 import DS from 'ember-data';
 
 var Post, env;
 
+module('integration/records/save - Save Record returns Promise', function(hooks) {
+  if (!RETURN_PROMISE_FROM_SAVE) {
+    return;
+  }
+  hooks.beforeEach(function() {
+    Post = DS.Model.extend({
+      title: DS.attr('string'),
+    });
+
+    env = setupStore({ post: Post });
+  });
+
+  hooks.afterEach(function() {
+    run(env.container, 'destroy');
+  });
+
+  test('Save should return a promise that resolves to the model after save - RETURN_PROMISE_FROM_SAVE enabled', function(assert) {
+    assert.expect(4);
+    let post = env.store.createRecord('post', { title: 'toto' });
+
+    var deferred = defer();
+    env.adapter.createRecord = function(store, type, snapshot) {
+      return deferred.promise;
+    };
+
+    run(function() {
+      var saved = post.save();
+
+      assert.strictEqual(saved.get, undefined , 'there is no get method');
+
+      deferred.resolve({ data: { id: 123, type: 'post' } });
+      saved.then(function(model) {
+        assert.ok(true, 'save operation was resolved');
+        assert.notStrictEqual(model, saved, 'model and promise are not the same');
+        assert.equal(model, post, 'resolves with the model');
+      });
+    });
+  })
+});
+
 module('integration/records/save - Save Record', function(hooks) {
+  if (RETURN_PROMISE_FROM_SAVE) {
+    return;
+  }
+
   hooks.beforeEach(function() {
     Post = DS.Model.extend({
       title: DS.attr('string'),
@@ -44,6 +89,37 @@ module('integration/records/save - Save Record', function(hooks) {
       });
     });
   });
+
+  deprecatedTest(
+    'Expect deprecation warnings when using promiseproxy after save',
+    {
+      id: 'ember-data:save-returns-a-promise',
+      until: '4.0',
+    },
+    function(assert) {
+      assert.expect(4);
+      let post = env.store.createRecord('post', { title: 'toto' });
+
+      var deferred = defer();
+      env.adapter.createRecord = function(store, type, snapshot) {
+        return deferred.promise;
+      };
+
+      run(function() {
+        var saved = post.save();
+
+        // `save` returns a PromiseObject which allows to call get on it
+        assert.strictEqual(saved.get('id'), undefined);
+
+        deferred.resolve({ data: { id: 123, type: 'post' } });
+        saved.then(function(model) {
+          assert.ok(true, 'save operation was resolved');
+          assert.equal(saved.get('id'), 123);
+          assert.equal(model, post, 'resolves with the model');
+        });
+      });
+    }
+  );
 
   test('Will reject save on error', function(assert) {
     let post = env.store.createRecord('post', { title: 'toto' });

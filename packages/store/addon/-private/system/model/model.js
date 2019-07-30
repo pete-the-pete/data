@@ -4,7 +4,7 @@ import DeprecatedEvented from '../deprecated-evented';
 import EmberObject, { computed, get } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { assert, warn, deprecate } from '@ember/debug';
-import { PromiseObject } from '../promise-proxies';
+import { PromiseObject, DeprecatedPromiseObject } from '../promise-proxies';
 import { errorsArrayToHash } from '../errors-utils';
 import Errors from '../model/errors';
 import {
@@ -17,7 +17,7 @@ import recordDataFor from '../record-data-for';
 import Ember from 'ember';
 import InternalModel from './internal-model';
 import RootState from './states';
-import { RECORD_DATA_ERRORS, RECORD_DATA_STATE } from '@ember-data/canary-features';
+import { RECORD_DATA_ERRORS, RECORD_DATA_STATE, RETURN_PROMISE_FROM_SAVE } from '@ember-data/canary-features';
 import coerceId from '../coerce-id';
 
 const { changeProperties } = Ember;
@@ -866,9 +866,16 @@ const Model = EmberObject.extend(DeprecatedEvented, {
     successfully or rejected if the adapter returns with an error.
   */
   save(options) {
-    return PromiseObject.create({
-      promise: this._internalModel.save(options).then(() => this),
-    });
+    const savePromise = this._internalModel.save(options).then(() => this);
+
+    if (RETURN_PROMISE_FROM_SAVE) {
+      return savePromise;
+    } else {
+      const _promiseObject = DEBUG ? DeprecatedPromiseObject : PromiseObject;
+      return _promiseObject.create({
+        promise: savePromise,
+      });
+    }
   },
 
   /**

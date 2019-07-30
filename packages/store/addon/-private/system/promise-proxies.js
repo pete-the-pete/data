@@ -5,6 +5,7 @@ import { get, computed } from '@ember/object';
 import { reads } from '@ember/object/computed';
 import { Promise } from 'rsvp';
 import { assert } from '@ember/debug';
+import { deprecate } from '@ember/application/deprecations';
 
 /**
   @module @ember-data/store
@@ -83,6 +84,30 @@ export function promiseArray(promise, label) {
     promise: Promise.resolve(promise, label),
   });
 }
+
+/**
+ * DeprecatedPromiseObject used to enable https://github.com/emberjs/rfcs/pull/362 - return promise from save
+ * When the feature isn't turned on users will get deprecation messages encouraging them to use the new feature.
+ */
+export const DeprecatedPromiseObject = PromiseObject.extend({
+  get(...args) {
+    this.promise.then(_obj => {
+      deprecate(
+        `You used a promise object to access ${args[0]} on ${_obj._internalModel._recordData.modelName}#${
+          this.promise._result._internalModel._recordData.id
+        }. Enabling RETURN_PROMISE_FROM_SAVE will return a promise that resolves with the model`,
+        false,
+        {
+          id: 'ember-data:save-returns-a-promise',
+          until: '4.0',
+        }
+      );
+      return _obj;
+    });
+    // show a deprecation warning for everythign other than promise methods (then, catch, finally)
+    return this._super(...args);
+  },
+});
 
 export const PromiseBelongsTo = PromiseObject.extend({
   // we don't proxy meta because we would need to proxy it to the relationship state container

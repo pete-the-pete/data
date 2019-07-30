@@ -17,4 +17,5 @@ export default {
   RECORD_DATA_ERRORS: null,
   RECORD_DATA_STATE: null,
   IDENTIFIERS: null,
+  RETURN_PROMISE_FROM_SAVE: null,
 };
